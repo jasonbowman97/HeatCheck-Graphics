@@ -1,15 +1,21 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import SL from "../ui/SectionLabel";
 import Inp from "../ui/Input";
 import Btn from "../ui/Button";
 import { BADGES } from "../../data/badges";
+import ImageImportModal from "../ImageImportModal";
 
 export default function DataPanel({ columns, rows, theme, onUpdateCol, onUpdateCell, onUpdateBadge, onToggleHero, onAddRow, onRemoveRow, onDuplicateRow, onMoveRow, onAddCol, onRemoveCol, onSetColumns, onSetRows }) {
   const [pasteMode, setPasteMode] = useState(false);
   const [pasteText, setPasteText] = useState("");
   const [pasteError, setPasteError] = useState("");
   const [pasteSuccess, setPasteSuccess] = useState("");
+
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState("");
+  const [extractedData, setExtractedData] = useState(null);
+  const fileRef = useRef(null);
 
   const handlePaste = () => {
     if (!pasteText.trim()) return;
@@ -50,16 +56,59 @@ export default function DataPanel({ columns, rows, theme, onUpdateCol, onUpdateC
     setTimeout(() => setPasteSuccess(""), 4000);
   };
 
+  const handleFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    setImporting(true); setImportError(""); setExtractedData(null);
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("Failed to read file"));
+        reader.readAsDataURL(file);
+      });
+      const res = await fetch("/api/extract-table", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image: dataUrl }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Extraction failed");
+      if (!data.columns?.length || !data.rows?.length) throw new Error("No table data found in image");
+      setExtractedData(data);
+    } catch (err) { setImportError(err.message || "Failed to extract table data"); }
+    finally { setImporting(false); }
+  };
+
+  const handleImageImport = (selectedCols, selectedRows) => {
+    onSetColumns(selectedCols.map((c) => c.toUpperCase()));
+    onSetRows(selectedRows);
+    setExtractedData(null);
+    setPasteSuccess();
+    setTimeout(() => setPasteSuccess(""), 4000);
+  };
+
   return (
     <>
-      <div style={{ marginBottom: 12 }}>
-        <button onClick={() => { setPasteMode(!pasteMode); setPasteError(""); setPasteSuccess(""); }} style={{ width: "100%", padding: "8px", fontSize: 11, fontWeight: 700, letterSpacing: 1, background: pasteMode ? theme.accent : `${theme.accent}22`, color: pasteMode ? "#fff" : theme.accentLight, border: `1px solid ${theme.accent}44`, borderRadius: 6, cursor: "pointer", textTransform: "uppercase" }}>
-          📋 {pasteMode ? "Cancel" : "Paste Data from Dashboard"}
+      <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+        <button onClick={() => { setPasteMode(!pasteMode); setPasteError(""); setPasteSuccess(""); }} style={{ flex: 1, padding: "8px", fontSize: 11, fontWeight: 700, letterSpacing: 1, background: pasteMode ? theme.accent : `${theme.accent}22`, color: pasteMode ? "#fff" : theme.accentLight, border: `1px solid ${theme.accent}44`, borderRadius: 6, cursor: "pointer", textTransform: "uppercase" }}>
+          {pasteMode ? "Cancel" : "Paste Data"}
         </button>
+        <button onClick={() => fileRef.current?.click()} disabled={importing} style={{ flex: 1, padding: "8px", fontSize: 11, fontWeight: 700, letterSpacing: 1, background: `${theme.accent}22`, color: theme.accentLight, border: `1px solid ${theme.accent}44`, borderRadius: 6, cursor: importing ? "wait" : "pointer", textTransform: "uppercase", opacity: importing ? 0.6 : 1 }}>
+          {importing ? "Analyzing..." : "Upload Screenshot"}
+        </button>
+        <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={handleFileSelect} style={{ display: "none" }} />
       </div>
       {pasteSuccess && (
         <div style={{ marginBottom: 8, padding: 8, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 6, fontSize: 11, color: "#4ade80", fontWeight: 600 }}>
           ✓ {pasteSuccess}
+        </div>
+      )}
+      {importError && (
+        <div style={{ marginBottom: 8, padding: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 6, fontSize: 11, color: "#f87171", fontWeight: 600 }}>
+          {importError}
+        </div>
+      )}
+      {importError && (
+        <div style={{ marginBottom: 8, padding: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 6, fontSize: 11, color: "#f87171", fontWeight: 600 }}>
+          {importError}
         </div>
       )}
       {pasteMode && (
@@ -76,6 +125,26 @@ export default function DataPanel({ columns, rows, theme, onUpdateCol, onUpdateC
           <button onClick={handlePaste} style={{ marginTop: 6, width: "100%", padding: "7px", fontSize: 11, fontWeight: 700, background: theme.accent, color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" }}>✓ Import Data</button>
         </div>
       )}
+      {extractedData && (
+        <ImageImportModal
+          columns={extractedData.columns}
+          rows={extractedData.rows}
+          theme={theme}
+          onImport={handleImageImport}
+          onCancel={() => setExtractedData(null)}
+        />
+      )}
+
+      {extractedData && (
+        <ImageImportModal
+          columns={extractedData.columns}
+          rows={extractedData.rows}
+          theme={theme}
+          onImport={handleImageImport}
+          onCancel={() => setExtractedData(null)}
+        />
+      )}
+
       <SL>Columns <Btn onClick={onAddCol} disabled={columns.length >= 7}>+ Col</Btn></SL>
       {columns.map((c, i) => (
         <div key={i} style={{ display: "flex", gap: 4, alignItems: "center" }}>

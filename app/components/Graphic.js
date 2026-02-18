@@ -21,9 +21,18 @@ function Rank({ n }) {
 
 const Graphic = React.memo(function Graphic({ title, subtitle, callout, columns, rows, theme, conditionalCols, conditionalMode, showRanks, showBadges }) {
   const t = THEMES[theme];
-  const fs = columns.length > 5 ? 11 : columns.length > 4 ? 12 : 14;
-  const hfs = columns.length > 5 ? 8 : columns.length > 4 ? 9 : 10;
   const hasCallout = callout && callout.trim().length > 0;
+
+  const n = rows.length;
+  const availH = hasCallout ? 540 : 568;
+  const perRow = availH / (n + 1);
+
+  const colMax = columns.length > 5 ? 15 : columns.length > 4 ? 17 : 22;
+  const fs = Math.round(Math.min(colMax, Math.max(11, perRow * 0.35)));
+  const hfs = Math.round(Math.min(12, Math.max(8, fs * 0.72)));
+
+  const cellPadV = Math.round(Math.min(18, Math.max(3, (perRow - fs * 1.2) / 2)));
+  const hPadV = Math.round(Math.min(12, Math.max(4, (perRow - hfs * 1.2) / 2)));
 
   return (
     <div style={{ width: TW, height: TH, background: t.bg, position: "relative", overflow: "hidden", fontFamily: "'Oswald','Impact','Arial Black',sans-serif", color: t.text, display: "flex", flexDirection: "column" }}>
@@ -37,7 +46,7 @@ const Graphic = React.memo(function Graphic({ title, subtitle, callout, columns,
 
       <div style={{ position: "relative", zIndex: 1, padding: hasCallout ? "10px 32px 0" : "16px 32px 0", textAlign: "center", flexShrink: 0 }}>
         <div style={{ fontSize: 9, letterSpacing: 6, color: t.accentLight, fontWeight: 700, textTransform: "uppercase", marginBottom: 2, opacity: 0.8 }}>HEATCHECK HQ</div>
-        <h1 style={{ margin: 0, fontSize: hasCallout ? 30 : 36, fontWeight: 900, letterSpacing: 4, lineHeight: 1, textShadow: `0 0 30px ${t.glow}, 0 2px 8px rgba(0,0,0,0.8)`, background: `linear-gradient(180deg, #fff 20%, ${t.accentLight} 100%)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{title}</h1>
+        <h1 style={{ margin: 0, fontSize: hasCallout ? 30 : 36, fontWeight: 900, letterSpacing: 4, lineHeight: 1, textShadow: `0 0 10px ${t.glow}, 0 2px 8px rgba(0,0,0,0.8)`, color: "#fff" }}>{title}</h1>
         <div style={{ fontSize: 11, letterSpacing: 4, color: t.subtext, marginTop: 2 }}>{subtitle}</div>
       </div>
 
@@ -54,9 +63,9 @@ const Graphic = React.memo(function Graphic({ title, subtitle, callout, columns,
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              {showRanks && <th style={{ width: 30, padding: "5px 2px", borderBottom: `2px solid ${t.accent}`, fontSize: hfs, color: t.accentLight, fontWeight: 700 }}>#</th>}
-              {columns.map((c, i) => <th key={i} style={{ padding: "5px 6px", textAlign: i === 0 ? "left" : "center", fontWeight: 700, fontSize: hfs, letterSpacing: 2, color: t.accentLight, borderBottom: `2px solid ${t.accent}`, textTransform: "uppercase", whiteSpace: "nowrap" }}>{c}</th>)}
-              {showBadges && <th style={{ width: 36, padding: "5px 2px", borderBottom: `2px solid ${t.accent}` }} />}
+              {showRanks && <th style={{ width: 30, padding: `${hPadV}px 2px`, borderBottom: `2px solid ${t.accent}`, fontSize: hfs, color: t.accentLight, fontWeight: 700 }}>#</th>}
+              {columns.map((c, i) => <th key={i} style={{ padding: `${hPadV}px 6px`, textAlign: i === 0 ? "left" : "center", fontWeight: 700, fontSize: hfs, letterSpacing: 2, color: t.accentLight, borderBottom: `2px solid ${t.accent}`, textTransform: "uppercase", whiteSpace: "nowrap" }}>{c}</th>)}
+              {showBadges && <th style={{ width: 36, padding: `${hPadV}px 2px`, borderBottom: `2px solid ${t.accent}` }} />}
             </tr>
           </thead>
           <tbody>
@@ -65,18 +74,18 @@ const Graphic = React.memo(function Graphic({ title, subtitle, callout, columns,
               const hero = row.isHero;
               return (
                 <tr key={row.id || ri} style={{ background: hero ? `linear-gradient(90deg, ${t.accent}18, ${t.accent}0a, ${t.accent}18)` : ri % 2 === 0 ? t.rowEven : t.rowOdd, borderBottom: hero ? `2px solid ${t.accentLight}44` : `1px solid ${t.border}`, boxShadow: hero ? `inset 0 0 30px ${t.glow}` : "none" }}>
-                  {showRanks && <td style={{ width: 30, padding: "4px 2px", textAlign: "center", verticalAlign: "middle" }}><Rank n={ri + 1} /></td>}
+                  {showRanks && <td style={{ width: 30, padding: `${cellPadV}px 2px`, textAlign: "center", verticalAlign: "middle" }}><Rank n={ri + 1} /></td>}
                   {row.cells.map((cell, ci) => {
                     const bg = conditionalCols.includes(ci) ? getCellBg(cell, rows.map((r) => r.cells[ci]), conditionalMode) : null;
                     const up = typeof cell === "string" && cell.startsWith("+");
                     const dn = typeof cell === "string" && /^-\d/.test(cell) && ci > 0;
                     return (
-                      <td key={ci} style={{ padding: "5px 6px", textAlign: ci === 0 ? "left" : "center", fontWeight: ci === 0 || hero ? 700 : 500, fontSize: hero ? fs + 1 : fs, color: ci === 0 ? (hero ? t.accentLight : "#fff") : t.subtext, textTransform: ci === 0 ? "uppercase" : "none", whiteSpace: "nowrap", background: bg || "transparent", letterSpacing: hero && ci === 0 ? 1 : 0 }}>
+                      <td key={ci} style={{ padding: `${cellPadV}px 6px`, textAlign: ci === 0 ? "left" : "center", fontWeight: ci === 0 || hero ? 700 : 500, fontSize: hero ? fs + 1 : fs, color: ci === 0 ? (hero ? t.accentLight : "#fff") : t.subtext, textTransform: ci === 0 ? "uppercase" : "none", whiteSpace: "nowrap", background: bg || "transparent", letterSpacing: hero && ci === 0 ? 1 : 0 }}>
                         {up ? <span style={{ color: "#4ade80", fontWeight: 700 }}>{cell} ▲</span> : dn ? <span style={{ color: "#f87171", fontWeight: 700 }}>{cell} ▼</span> : cell}
                       </td>
                     );
                   })}
-                  {showBadges && badge.id !== "none" ? <td style={{ width: 36, padding: "3px 4px", textAlign: "center", verticalAlign: "middle" }}><span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "2px 5px", borderRadius: 6, background: badge.bg, border: `1px solid ${badge.border}`, fontSize: 12 }}>{badge.icon}</span></td> : showBadges ? <td style={{ width: 36 }} /> : null}
+                  {showBadges && badge.id !== "none" ? <td style={{ width: 36, padding: `${cellPadV}px 4px`, textAlign: "center", verticalAlign: "middle" }}><span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "2px 5px", borderRadius: 6, background: badge.bg, border: `1px solid ${badge.border}`, fontSize: 12 }}>{badge.icon}</span></td> : showBadges ? <td style={{ width: 36 }} /> : null}
                 </tr>
               );
             })}
@@ -85,8 +94,8 @@ const Graphic = React.memo(function Graphic({ title, subtitle, callout, columns,
       </div>
 
       <div style={{ position: "relative", zIndex: 1, padding: "6px 32px 10px", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
-        <div style={{ fontSize: 8, color: t.subtext, letterSpacing: 2, opacity: 0.5 }}>@heatcheckhq</div>
-        <div style={{ fontSize: 9, letterSpacing: 2, color: t.accentLight, fontWeight: 700, opacity: 0.7 }}>{BRAND.cta}</div>
+        <div style={{ fontSize: 12, color: t.subtext, letterSpacing: 3, fontWeight: 700, opacity: 0.6 }}>@HEATCHECKHQ</div>
+        <div style={{ fontSize: 12, letterSpacing: 3, color: t.accentLight, fontWeight: 700, opacity: 0.7 }}>{BRAND.cta}</div>
       </div>
     </div>
   );
