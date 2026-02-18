@@ -3,6 +3,11 @@ export const metadata = {
   description: 'Generate viral sports stats graphics for Twitter/X from HeatCheck HQ dashboards',
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+}
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">

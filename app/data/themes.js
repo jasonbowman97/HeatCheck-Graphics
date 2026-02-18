@@ -1,0 +1,7 @@
+export const THEMES = {
+  fire: { name: "🔥 HeatCheck Fire", bg: "#0c0000", accent: "#ef4444", accentLight: "#fca5a5", accentDark: "#991b1b", glow: "rgba(239,68,68,0.45)", rowEven: "rgba(239,68,68,0.05)", rowOdd: "rgba(0,0,0,0.3)", border: "rgba(239,68,68,0.3)", text: "#fff", subtext: "#fca5a5" },
+  ice: { name: "❄️ Ice Cold", bg: "#000814", accent: "#2563eb", accentLight: "#93c5fd", accentDark: "#1e3a8a", glow: "rgba(37,99,235,0.45)", rowEven: "rgba(37,99,235,0.05)", rowOdd: "rgba(0,0,0,0.3)", border: "rgba(37,99,235,0.3)", text: "#fff", subtext: "#93c5fd" },
+  neon: { name: "⚡ Neon Purple", bg: "#0a0014", accent: "#a855f7", accentLight: "#d8b4fe", accentDark: "#6b21a8", glow: "rgba(168,85,247,0.45)", rowEven: "rgba(168,85,247,0.05)", rowOdd: "rgba(0,0,0,0.3)", border: "rgba(168,85,247,0.3)", text: "#fff", subtext: "#d8b4fe" },
+  emerald: { name: "💰 Money Green", bg: "#001a0a", accent: "#22c55e", accentLight: "#86efac", accentDark: "#166534", glow: "rgba(34,197,94,0.45)", rowEven: "rgba(34,197,94,0.05)", rowOdd: "rgba(0,0,0,0.3)", border: "rgba(34,197,94,0.3)", text: "#fff", subtext: "#86efac" },
+  gold: { name: "🏆 Champion Gold", bg: "#0a0800", accent: "#eab308", accentLight: "#fde68a", accentDark: "#854d0e", glow: "rgba(234,179,8,0.45)", rowEven: "rgba(234,179,8,0.05)", rowOdd: "rgba(0,0,0,0.3)", border: "rgba(234,179,8,0.3)", text: "#fff", subtext: "#fde68a" },
+};
