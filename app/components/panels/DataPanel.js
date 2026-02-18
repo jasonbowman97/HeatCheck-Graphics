@@ -5,6 +5,7 @@ import Inp from "../ui/Input";
 import Btn from "../ui/Button";
 import { BADGES } from "../../data/badges";
 import ImageImportModal from "../ImageImportModal";
+import { getLogoUrl } from "../../utils/getLogoUrl";
 
 export default function DataPanel({ columns, rows, theme, onUpdateCol, onUpdateCell, onUpdateBadge, onToggleHero, onAddRow, onRemoveRow, onDuplicateRow, onMoveRow, onAddCol, onRemoveCol, onSetColumns, onSetRows }) {
   const [pasteMode, setPasteMode] = useState(false);
@@ -77,11 +78,11 @@ export default function DataPanel({ columns, rows, theme, onUpdateCol, onUpdateC
     finally { setImporting(false); }
   };
 
-  const handleImageImport = (selectedCols, selectedRows) => {
+  const handleImageImport = (selectedCols, selectedRows, teams, sport) => {
     onSetColumns(selectedCols.map((c) => c.toUpperCase()));
-    onSetRows(selectedRows);
+    onSetRows(selectedRows.map((r, i) => ({ ...r, logoUrl: teams && teams[i] ? getLogoUrl(teams[i], sport) : null })));
     setExtractedData(null);
-    setPasteSuccess();
+    setPasteSuccess(`Imported from screenshot`);
     setTimeout(() => setPasteSuccess(""), 4000);
   };
 
@@ -99,11 +100,6 @@ export default function DataPanel({ columns, rows, theme, onUpdateCol, onUpdateC
       {pasteSuccess && (
         <div style={{ marginBottom: 8, padding: 8, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 6, fontSize: 11, color: "#4ade80", fontWeight: 600 }}>
           ✓ {pasteSuccess}
-        </div>
-      )}
-      {importError && (
-        <div style={{ marginBottom: 8, padding: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 6, fontSize: 11, color: "#f87171", fontWeight: 600 }}>
-          {importError}
         </div>
       )}
       {importError && (
@@ -131,16 +127,8 @@ export default function DataPanel({ columns, rows, theme, onUpdateCol, onUpdateC
           rows={extractedData.rows}
           theme={theme}
           onImport={handleImageImport}
-          onCancel={() => setExtractedData(null)}
-        />
-      )}
-
-      {extractedData && (
-        <ImageImportModal
-          columns={extractedData.columns}
-          rows={extractedData.rows}
-          theme={theme}
-          onImport={handleImageImport}
+          teams={extractedData.teams}
+          sport={extractedData.sport}
           onCancel={() => setExtractedData(null)}
         />
       )}

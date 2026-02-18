@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-export default function ImageImportModal({ columns, rows, theme, onImport, onCancel }) {
+export default function ImageImportModal({ columns, rows, theme, onImport, onCancel, teams, sport }) {
   const [colChecked, setColChecked] = useState(() => columns.map(() => true));
   const [rowChecked, setRowChecked] = useState(() => rows.map(() => true));
 
@@ -18,7 +18,8 @@ export default function ImageImportModal({ columns, rows, theme, onImport, onCan
       badge: "none",
       isHero: false,
     }));
-    onImport(filteredCols, filteredRows);
+    const filteredTeams = teams ? selectedRowIndices.map((ri) => teams[ri] || null) : null;
+    onImport(filteredCols, filteredRows, filteredTeams, sport);
   };
 
   const anySelected = selectedColIndices.length >= 2 && selectedRowIndices.length >= 1;

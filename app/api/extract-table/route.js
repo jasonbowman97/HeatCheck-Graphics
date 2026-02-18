@@ -22,7 +22,7 @@ export async function POST(request) {
         role: "user",
         content: [
           { type: "image", source: { type: "base64", media_type: mediaType, data: base64Data } },
-          { type: "text", text: 'Look at this dashboard screenshot. Extract ALL table data you can see. Return a JSON object with:\n- "columns": array of column header strings\n- "rows": array of arrays, each inner array is one row\'s cell values as strings\nInclude every row and column visible. Return ONLY valid JSON, no markdown.' },
+          { type: "text", text: "Look at this dashboard screenshot. Extract ALL table data you can see. Return a JSON object with:\n- \"columns\": array of column header strings\n- \"rows\": array of arrays, each inner array is one row cell values as strings\n- \"teams\": array of team abbreviations (e.g. \"NYY\", \"LAL\", \"DAL\") for each row based on logos or team names visible. Use standard 2-3 letter uppercase abbreviations. If no team identifiable, use null.\n- \"sport\": the sport shown (\"mlb\", \"nba\", or \"nfl\")\nInclude every row and column visible. Return ONLY valid JSON, no markdown." },
         ],
       }],
     });
@@ -41,7 +41,7 @@ export async function POST(request) {
     if (!parsed.columns || !parsed.rows || !Array.isArray(parsed.columns) || !Array.isArray(parsed.rows)) {
       return Response.json({ error: "AI response missing columns or rows" }, { status: 422 });
     }
-    return Response.json(parsed);
+    return Response.json({ columns: parsed.columns, rows: parsed.rows, teams: parsed.teams || null, sport: parsed.sport || null });
   } catch (e) {
     console.error("extract-table error:", e);
     const msg = e.message || "Failed to extract table data";

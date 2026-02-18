@@ -81,7 +81,7 @@ const Graphic = React.memo(function Graphic({ title, subtitle, callout, columns,
                     const dn = typeof cell === "string" && /^-\d/.test(cell) && ci > 0;
                     return (
                       <td key={ci} style={{ padding: `${cellPadV}px 6px`, textAlign: ci === 0 ? "left" : "center", fontWeight: ci === 0 || hero ? 700 : 500, fontSize: hero ? fs + 1 : fs, color: ci === 0 ? (hero ? t.accentLight : "#fff") : t.subtext, textTransform: ci === 0 ? "uppercase" : "none", whiteSpace: "nowrap", background: bg || "transparent", letterSpacing: hero && ci === 0 ? 1 : 0 }}>
-                        {up ? <span style={{ color: "#4ade80", fontWeight: 700 }}>{cell} ▲</span> : dn ? <span style={{ color: "#f87171", fontWeight: 700 }}>{cell} ▼</span> : cell}
+                        {ci === 0 && row.logoUrl && <img src={row.logoUrl} alt="" style={{ width: fs + 6, height: fs + 6, marginRight: 6, verticalAlign: "middle", borderRadius: 2, objectFit: "contain" }} />}{up ? <span style={{ color: "#4ade80", fontWeight: 700 }}>{cell} ▲</span> : dn ? <span style={{ color: "#f87171", fontWeight: 700 }}>{cell} ▼</span> : cell}
                       </td>
                     );
                   })}
